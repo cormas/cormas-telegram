@@ -3,7 +3,7 @@ Class {
 	#superclass : #Bottlegram,
 	#instVars : [
 		'cormasModel',
-		'agent'
+		'agents'
 	],
 	#category : #'Cormas-Telegram-Bot'
 }
@@ -11,16 +11,17 @@ Class {
 { #category : #'as yet unclassified' }
 CormasBot >> controlAgent: aMessage [
 	
-	| text words type id agentCollection |
+	| words type id agentCollection agent |
 	
-	text := aMessage text.
-	words := text substrings.
+	words := aMessage text substrings.
 	
 	type := words second.
 	id := words third asInteger.
 	
 	agentCollection := cormasModel perform: ('the', type, 's') asSymbol.
 	agent := agentCollection detect: [ :each | each id = id ].
+	
+	agents at: aMessage chat id put: agent.
 	
 	aMessage send: 'Controlling ', type, ' agent ', id asString
 ]
@@ -45,32 +46,73 @@ CormasBot >> defaultText: aMessage [
 
 	(text beginsWith: 'control') ifTrue: [ self controlAgent: aMessage ].
 	
-	text = 'move' ifTrue: [ self move: aMessage ].
-	text = 'eat' ifTrue: [ self eat: aMessage ].
+	(agents keys includes: aMessage chat id) ifFalse: [ 
+		aMessage send: 'You must first select the agent that you wish to control'.
+		^ self ].
+	
+	[ self execute: aMessage ] on: Exception do: [ :exception |
+		aMessage send: exception description ].
 ]
 
-{ #category : #accessing }
-CormasBot >> eat: aMessage [
+{ #category : #execution }
+CormasBot >> execute: aMessage [
 
-	agent eat.
+	| words agent selector |
+	words := aMessage text substrings.
+	
+	agent := agents at: aMessage chat id.
+	
+	selector := self
+		findSelectorIn: agent
+		matching: words first
+		numberOfArguments: words size - 1.
+	
+	agent perform: selector.
 	cormasModel timeChanged.
 	
-	aMessage send: 'Agent is eating'	
+	aMessage send: 'Performing action #', selector.
 ]
 
-{ #category : #accessing }
-CormasBot >> move: aMessage [
+{ #category : #'as yet unclassified' }
+CormasBot >> findSelectorIn: anObject matching: aString numberOfArguments: aNumber [
 
-	agent move.
-	cormasModel timeChanged.
+	| selectors |
+	selectors := anObject class allSelectors.
 	
-	aMessage send: 'Agent is moving'
+	selectors := selectors select: [ :each | each numArgs = aNumber ].
+	
+	selectors ifEmpty: [
+		self error: 'Agent does not understand any messages with this number of arguments' ].
+	
+	selectors
+		detect: [ :selector |
+			(self simplifySelector: selector asString) = (self simplifySelector: aString) ]
+		ifFound: [ :selector | ^ selector ]
+		ifNone: [
+			self error: 'Agent does not understand any message similar to ', aString,
+				' with ', aNumber asString, ' arguments' ].
+]
+
+{ #category : #initialization }
+CormasBot >> initialize [
+
+	super initialize.
+	agents := Dictionary new.
+]
+
+{ #category : #'as yet unclassified' }
+CormasBot >> simplifySelector: aString [
+	"Simplify the selector to match it to a text received from chat. For example, we want users to write 'Move' or 'move' to match selector #move. They can also write 'Move 4' to match selector #move: with one argument 4.
+	
+	We do this by converting selector to lowercase and removing all colon characters"
+
+	^ (aString copyWithout: $:) asLowercase
 ]
 
 { #category : #action }
 CormasBot >> slashHelp: aMessage [
 
-	aMessage send: 'Hello, I''m a Telegram bot written in Pharo. Tell me something and I''ll repeat after you'
+	aMessage send: 'Hello, I''m a Telegram bot for Cormas written in Pharo. Use me to select an agent that you wish to control and then make it move or eat'
 ]
 
 { #category : #action }
