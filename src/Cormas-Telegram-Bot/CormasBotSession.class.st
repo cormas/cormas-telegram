@@ -115,7 +115,9 @@ CormasBotSession >> interpret: aMessage [
 	| text |
 	text := aMessage text asLowercase.
 
-	(text beginsWith: 'control') ifTrue: [ self controlEntity: aMessage ].
+	(text beginsWith: 'control') ifTrue: [
+		self controlEntity: aMessage.
+		^ self ].
 	
 	(entities keys includes: aMessage chat id) ifFalse: [ 
 		aMessage send: 'You must first select the agent that you wish to control'.
