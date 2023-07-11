@@ -5,7 +5,7 @@ Class {
 		'name',
 		'action'
 	],
-	#category : #'Cormas-Telegram-Bot'
+	#category : #'Cormas-Telegram'
 }
 
 { #category : #accessing }

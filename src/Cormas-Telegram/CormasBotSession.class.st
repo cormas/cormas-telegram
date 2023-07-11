@@ -9,7 +9,7 @@ Class {
 		'entities',
 		'commands'
 	],
-	#category : #'Cormas-Telegram-Bot'
+	#category : #'Cormas-Telegram'
 }
 
 { #category : #accessing }

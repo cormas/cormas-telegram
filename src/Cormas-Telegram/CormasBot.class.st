@@ -5,7 +5,7 @@ Class {
 		'sessions',
 		'connectedChats'
 	],
-	#category : #'Cormas-Telegram-Bot'
+	#category : #'Cormas-Telegram'
 }
 
 { #category : #'as yet unclassified' }
