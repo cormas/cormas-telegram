@@ -1,55 +1,49 @@
 Class {
-	#name : #CormasBotSession,
-	#superclass : #Object,
+	#name : 'CormasBotSession',
+	#superclass : 'Object',
 	#instVars : [
 		'id',
 		'title',
 		'bot',
-		'cormasModel',
+		'simulation',
 		'entities',
-		'commands'
+		'commands',
+		'updateBlock'
 	],
-	#category : #'Cormas-Telegram'
+	#category : 'Cormas-Telegram',
+	#package : 'Cormas-Telegram'
 }
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CormasBotSession >> bot: aBot [
 
 	bot := aBot
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CormasBotSession >> controlEntity: aMessage [
 	"Assign control over certain entity (agent, patch, etc.) to a chat that requested control over it"
-	| words type id entityCollection entity |
+	| words type entityId entityClass getter entityCollection entity |
 	
 	words := aMessage text substrings.
 	
 	type := words second.
-	id := words third asInteger.
+	entityId := words third asInteger.
 	
-	entityCollection := cormasModel perform: ('the', type, 's') asSymbol.
+	entityClass := simulation cormasModel class allEntityClasses detect: [ :aClass | aClass name includesSubstring: type ].
 	
-	entity := entityCollection detect: [ :each | each id = id ].
+	getter := simulation cormasModel getterForEntityClass: entityClass.
+	
+	entityCollection := simulation cormasModel perform: getter.
+	
+	entity := entityCollection detect: [ :each | each id = entityId ].
 	
 	entities at: aMessage chat id put: entity.
 	
-	aMessage send: 'Controlling ', type, ' entity with id ', id asString
+	aMessage send: 'Controlling ', type, ' entity with id ', entityId asString
 ]
 
-{ #category : #accessing }
-CormasBotSession >> cormasModel [
-
-	^ cormasModel
-]
-
-{ #category : #accessing }
-CormasBotSession >> cormasModel: aModel [
-
-	cormasModel := aModel
-]
-
-{ #category : #execution }
+{ #category : 'execution' }
 CormasBotSession >> execute: aMessage [
 
 	| words entity informalSelector arguments selector |
@@ -69,12 +63,12 @@ CormasBotSession >> execute: aMessage [
 		numberOfArguments: arguments size.
 	
 	entity perform: selector withArguments: arguments.
-	cormasModel timeChanged.
+	updateBlock value.
 	
 	aMessage send: 'Performing action #', selector.
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CormasBotSession >> findSelectorIn: anObject matching: aString numberOfArguments: aNumber [
 
 	| selectors |
@@ -94,22 +88,22 @@ CormasBotSession >> findSelectorIn: anObject matching: aString numberOfArguments
 				' with ', aNumber asString, ' arguments' ].
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CormasBotSession >> id [
 
 	^ id
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 CormasBotSession >> initialize [
 
 	super initialize.
 	id := self hash.
 	
-	entities := Dictionary new.
+	entities := Dictionary new
 ]
 
-{ #category : #private }
+{ #category : 'private' }
 CormasBotSession >> interpret: aMessage [
 
 	| text |
@@ -127,7 +121,7 @@ CormasBotSession >> interpret: aMessage [
 		aMessage send: exception description ].
 ]
 
-{ #category : #'as yet unclassified' }
+{ #category : 'as yet unclassified' }
 CormasBotSession >> simplifySelector: aString [
 	"Simplify the selector to match it to a text received from chat. For example, we want users to write 'Move' or 'move' to match selector #move. They can also write 'Move 4' to match selector #move: with one argument 4.
 	
@@ -136,14 +130,32 @@ CormasBotSession >> simplifySelector: aString [
 	^ (aString copyWithout: $:) asLowercase
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
+CormasBotSession >> simulation [
+
+	^ simulation
+]
+
+{ #category : 'accessing' }
+CormasBotSession >> simulation: aSimulation [
+
+	simulation := aSimulation 
+]
+
+{ #category : 'accessing' }
 CormasBotSession >> title [
 
 	^ title
 ]
 
-{ #category : #accessing }
+{ #category : 'accessing' }
 CormasBotSession >> title: aString [
 
 	title := aString
+]
+
+{ #category : 'enumerating' }
+CormasBotSession >> whenActionPerformedDo: aBlock [
+
+	updateBlock := aBlock
 ]

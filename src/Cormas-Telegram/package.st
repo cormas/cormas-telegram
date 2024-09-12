@@ -1,1 +1,1 @@
-Package { #name : #'Cormas-Telegram' }
+Package { #name : 'Cormas-Telegram' }

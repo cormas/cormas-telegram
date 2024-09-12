@@ -1,28 +1,32 @@
 Class {
-	#name : #CormasBot,
-	#superclass : #Bottlegram,
+	#name : 'CormasBot',
+	#superclass : 'Bottlegram',
 	#instVars : [
 		'sessions',
-		'connectedChats'
+		'connectedChats',
+		'updateBlock',
+		'simulation'
 	],
-	#category : #'Cormas-Telegram'
+	#category : 'Cormas-Telegram',
+	#package : 'Cormas-Telegram'
 }
 
-{ #category : #'as yet unclassified' }
-CormasBot >> createSessionFor: aModel titled: aString [
+{ #category : 'as yet unclassified' }
+CormasBot >> createSessionFor: aSimulation titled: aString [
 
 	| session |
 	
 	session := CormasBotSession new
 		bot: self;
-		cormasModel: aModel;
+		simulation: aSimulation;
 		title: aString;
+		whenActionPerformedDo: updateBlock;
 		yourself.
 		
 	sessions add: session.
 ]
 
-{ #category : #action }
+{ #category : 'action' }
 CormasBot >> defaultText: aMessage [
 	
 	| session |
@@ -35,7 +39,7 @@ CormasBot >> defaultText: aMessage [
 	session interpret: aMessage.
 ]
 
-{ #category : #initialization }
+{ #category : 'initialization' }
 CormasBot >> initialize [
 
 	super initialize.
@@ -44,9 +48,17 @@ CormasBot >> initialize [
 	
 	self registerCommand: #slashMySession: to: '/mysession'.
 	self registerCommand: #slashConnect: to: '/connect'.
+	
+	updateBlock := [ "do nothing" ]
 ]
 
-{ #category : #action }
+{ #category : 'accessing' }
+CormasBot >> simulation: aSimulation [
+
+	simulation := aSimulation
+]
+
+{ #category : 'action' }
 CormasBot >> slashConnect: aMessage [
 	"TODO: Implement a way to choose session"
 	
@@ -57,13 +69,13 @@ CormasBot >> slashConnect: aMessage [
 	aMessage send: 'You have joined the session ''', session title, ''''.
 ]
 
-{ #category : #action }
+{ #category : 'action' }
 CormasBot >> slashHelp: aMessage [
 
 	aMessage send: 'Hello, I''m a Telegram bot for Cormas written in Pharo. Use me to select an agent that you wish to control and then make it move or eat'
 ]
 
-{ #category : #action }
+{ #category : 'action' }
 CormasBot >> slashMySession: aMessage [
 
 	connectedChats at: aMessage chat id
@@ -74,8 +86,14 @@ CormasBot >> slashMySession: aMessage [
 		ifAbsent: [ aMessage send: 'You are not connected to any session yet' ].
 ]
 
-{ #category : #action }
+{ #category : 'action' }
 CormasBot >> slashStart: aMessage [
 
 	aMessage send: 'Hello, I''m a Telegram bot written in Pharo. Send /help for more information'
+]
+
+{ #category : 'enumerating' }
+CormasBot >> whenActionPerformedDo: aBlock [
+
+	updateBlock := aBlock
 ]
