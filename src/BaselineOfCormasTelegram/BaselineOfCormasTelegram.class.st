@@ -15,7 +15,7 @@ BaselineOfCormasTelegram >> baseline: spec [
 
 		"Packages"
 		spec
-			package: 'Cormas-Telegram' with: [ spec requires: #(Cormas Bottlegram) ];
+			package: 'Cormas-Telegram' with: [ spec requires: #(Bottlegram) ];
 			package: 'Cormas-Telegram-Tests' with: [ spec requires: #( 'Cormas-Telegram' ) ] ]
 ]
 
