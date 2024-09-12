@@ -10,7 +10,7 @@ BaselineOfCormasTelegram >> baseline: spec [
 	<baseline>
 	spec for: #common do: [
 		"Dependencies"
-		self loadCormas: spec.
+		"self loadCormas: spec."
 		self loadBottlegram: spec.
 
 		"Packages"
