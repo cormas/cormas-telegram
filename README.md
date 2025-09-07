@@ -14,6 +14,6 @@ In your [Pharo image](https://pharo.org/download), open the Playground (Ctrl+OW)
 Metacello new
     onConflictUseLoaded;
     baseline: 'CormasTelegram';
-    repository: 'github://cormas/cormas-telegram:main';
+    repository: 'github://cormas/cormas-telegram';
     load.
 ```
