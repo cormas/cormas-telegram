@@ -23,7 +23,7 @@ CormasBotSession >> bot: aBot [
 { #category : 'as yet unclassified' }
 CormasBotSession >> controlEntity: aMessage [
 	"Assign control over certain entity (agent, patch, etc.) to a chat that requested control over it"
-	| words type entityId entityClass getter entityCollection entity |
+	| words type entityId entityClass entityCollection entity |
 	
 	words := aMessage text substrings.
 	
@@ -32,9 +32,7 @@ CormasBotSession >> controlEntity: aMessage [
 	
 	entityClass := simulation cormasModel class allEntityClasses detect: [ :aClass | aClass name includesSubstring: type ].
 	
-	getter := simulation cormasModel getterForEntityClass: entityClass.
-	
-	entityCollection := simulation cormasModel perform: getter.
+	entityCollection := simulation cormasModel @@ entityClass.
 	
 	entity := entityCollection detect: [ :each | each id = entityId ].
 	

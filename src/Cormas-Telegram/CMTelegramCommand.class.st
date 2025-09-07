@@ -22,7 +22,7 @@ CMTelegramCommand >> actionWhenOn [
 
 	bot := (CormasBot new: '5865451037:AAFrVyYdHK57vk8p3OMVqc_uABLdno8C3N4')
 		whenActionPerformedDo: [ owner updateDiagram ];
-		createSessionFor: simulation titled: simulation modelClass name;
+		createSessionFor: simulation titled: simulation cormasModel class modelName;
 		yourself.
 	
 	bot startBotPulling: 0.5.
